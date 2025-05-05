@@ -1,0 +1,14 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nepviewer verbinden",
+        "description": "Gib die Seriennummer und deinen Token ein.",
+        "data": {
+          "sn": "Seriennummer",
+          "token": "Token"
+        }
+      }
+    }
+  }
+}

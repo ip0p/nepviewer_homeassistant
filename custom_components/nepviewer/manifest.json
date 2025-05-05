@@ -1,0 +1,9 @@
+{
+  "domain": "nepviewer",
+  "name": "Nepviewer Solar",
+  "documentation": "https://github.com/deinuser/nepviewer-homeassistant",
+  "dependencies": [],
+  "codeowners": ["@deinuser"],
+  "requirements": ["aiohttp"],
+  "version": "0.0.1"
+}
