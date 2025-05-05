@@ -1,0 +1,8 @@
+{
+  "name": "Nepviewer Solar",
+  "country": "de",
+  "homeassistant": "2024.0.0",
+  "domains": ["sensor"],
+  "render_readme": true,
+  "iot_class": "cloud_polling"
+}
