@@ -11,6 +11,7 @@ class NepviewerCoordinator(DataUpdateCoordinator):
         self.session = session
         self.sn = sn
         self.token = token
+        self.status = "unknown"
 
     async def _async_update_data(self):
         headers = {
@@ -24,6 +25,10 @@ class NepviewerCoordinator(DataUpdateCoordinator):
             headers=headers,
             json=payload
         ) as resp:
+            if resp.status == 200:
+                self.status = "ok"
+            else:
+                self.status = "error"
             return await resp.json()
 
 class NepviewerSensor(CoordinatorEntity, SensorEntity):
@@ -40,6 +45,19 @@ class NepviewerSensor(CoordinatorEntity, SensorEntity):
             data = data.get(key, {})
         return data or None
 
+    @property
+    def extra_state_attributes(self):
+        return {"status": self.coordinator.status}
+
+class NepviewerStatusSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator):
+        super().__init__(coordinator)
+        self._attr_name = "Nepviewer Status"
+
+    @property
+    def state(self):
+        return self.coordinator.status
+
 async def async_setup_entry(hass, entry, async_add_entities):
     session = aiohttp.ClientSession()
     sn = entry.data["sn"]
@@ -51,6 +69,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         NepviewerSensor(coordinator, "Solar Power", "totalNow", "W"),
         NepviewerSensor(coordinator, "Solar Today", "production.today", "kWh"),
         NepviewerSensor(coordinator, "Solar Total", "production.total", "kWh"),
+        NepviewerStatusSensor(coordinator)
     ]
 
     async_add_entities(sensors)
