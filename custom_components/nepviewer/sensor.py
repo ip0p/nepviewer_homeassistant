@@ -6,8 +6,8 @@ import asyncio
 DOMAIN = "nepviewer"
 
 class NepviewerCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass, session, sn, token):
-        super().__init__(hass, name=DOMAIN, update_interval=60)
+    def __init__(self, hass, session, sn, token, logger):
+        super().__init__(hass, logger=logger, name=DOMAIN, update_interval=60)
         self.session = session
         self.sn = sn
         self.token = token
@@ -62,7 +62,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
     session = aiohttp.ClientSession()
     sn = entry.data["sn"]
     token = entry.data["token"]
-    coordinator = NepviewerCoordinator(hass, session, sn, token)
+    logger = hass.helpers.logger
+    coordinator = NepviewerCoordinator(hass, session, sn, token, logger)
     await coordinator.async_config_entry_first_refresh()
 
     sensors = [
