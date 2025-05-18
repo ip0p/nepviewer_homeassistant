@@ -3,12 +3,13 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpda
 import aiohttp
 import asyncio
 import logging
+import datetime
 
 DOMAIN = "nepviewer"
 
 class NepviewerCoordinator(DataUpdateCoordinator):
     def __init__(self, hass, session, sn, token, logger):
-        super().__init__(hass, logger=logger, name=DOMAIN, update_interval=60)
+        super().__init__(hass, logger=logger, name=DOMAIN, update_interval=datetime.timedelta(seconds=60))
         self.session = session
         self.sn = sn
         self.token = token
@@ -21,19 +22,19 @@ class NepviewerCoordinator(DataUpdateCoordinator):
             "Accept": "application/json"
         }
         payload = {"sn": self.sn}
-        logger.info(f"Making request to NEP Viewer API with payload: {payload}")
+        self.logger.info(f"Making request to NEP Viewer API with payload: {payload}")
         async with self.session.post(
             "https://api.nepviewer.net/v2/device/statistics/overview",
             headers=headers,
             json=payload
         ) as resp:
-            logger.info(f"Received response with status code: {resp.status}")
+            self.logger.info(f"Received response with status code: {resp.status}")
             if resp.status == 200:
                 self.status = "ok"
             else:
                 self.status = "error"
             response_data = await resp.json()
-            logger.info(f"Response data: {response_data}")
+            self.logger.info(f"Response data: {response_data}")
             return response_data
 
 class NepviewerSensor(CoordinatorEntity, SensorEntity):
@@ -84,3 +85,4 @@ async def async_setup_entry(hass, entry, async_add_entities):
     ]
 
     async_add_entities(sensors)
+    await session.close()
