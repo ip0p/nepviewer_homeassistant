@@ -2,6 +2,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
 import aiohttp
 import asyncio
+import logging
 
 DOMAIN = "nepviewer"
 
@@ -20,16 +21,20 @@ class NepviewerCoordinator(DataUpdateCoordinator):
             "Accept": "application/json"
         }
         payload = {"sn": self.sn}
+        logger.info(f"Making request to NEP Viewer API with payload: {payload}")
         async with self.session.post(
             "https://api.nepviewer.net/v2/device/statistics/overview",
             headers=headers,
             json=payload
         ) as resp:
+            logger.info(f"Received response with status code: {resp.status}")
             if resp.status == 200:
                 self.status = "ok"
             else:
                 self.status = "error"
-            return await resp.json()
+            response_data = await resp.json()
+            logger.info(f"Response data: {response_data}")
+            return response_data
 
 class NepviewerSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, name, value_path, unit):
@@ -62,7 +67,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
     session = aiohttp.ClientSession()
     sn = entry.data["sn"]
     token = entry.data["token"]
-    logger = hass.helpers.logger
+    logger = logging.getLogger(__name__)
+
+    if not sn or not token:
+        logger.error("Configuration data is missing 'sn' or 'token'.")
+        return False
+
     coordinator = NepviewerCoordinator(hass, session, sn, token, logger)
     await coordinator.async_config_entry_first_refresh()
 

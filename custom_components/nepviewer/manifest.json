@@ -5,6 +5,6 @@
   "dependencies": [],
   "codeowners": ["@ip0p"],
   "requirements": ["aiohttp"],
-  "version": "0.0.2",
+  "version": "0.0.3",
   "config_flow": true
 }
