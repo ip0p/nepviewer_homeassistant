@@ -1,10 +1,10 @@
 {
   "domain": "nepviewer",
-  "name": "Nepviewer Solar",
-  "documentation": "https://github.com/ip0p/nepviewer-homeassistant",
+  "name": "NEPviewer Solar",
+  "documentation": "https://github.com/ip0p/nepviewer_homeassistant",
   "dependencies": [],
   "codeowners": ["@ip0p"],
   "requirements": ["aiohttp"],
-  "version": "0.0.3",
+  "version": "0.1.0",
   "config_flow": true
 }
