@@ -19,27 +19,11 @@ class NepviewerCoordinator(DataUpdateCoordinator):
         headers = {
             "Authorization": self.token,
             "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "de-DE,de;q=0.9,en-DE;q=0.8,en;q=0.7,en-US;q=0.6",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
             "Content-Type": "application/json",
-            "Origin": "https://user.nepviewer.com",
-            "Pragma": "no-cache",
-            "Referer": "https://user.nepviewer.com/",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "cross-site",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
             "app": "0",
             "client": "web",
-            "lan": "6",
             "oem": "NEP",
-            "sec-ch-ua": '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "sign": "C513D70171FB45FD85BE759FABDC6715"
         }
-
         payload = {
             "page": {
                 "size": 10,
