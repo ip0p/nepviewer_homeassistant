@@ -1,5 +1,5 @@
 {
-  "name": "Nepviewer Solar",
+  "name": "NEPViewer Solar",
   "country": "de",
   "homeassistant": "2024.0.0",
   "domains": ["sensor"],
