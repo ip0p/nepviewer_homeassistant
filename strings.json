@@ -1,12 +1,12 @@
 {
-  "name": "Nepviewer Solar",
+  "name": "NEPViewer Solar",
   "description": "Eine Home Assistant Integration für NEP Solarüberwachung. Zeigt aktuelle Leistung, Tages- und Gesamtertrag.",
-  "author": "deinuser",
+  "author": "ip0p",
   "keywords": ["solar", "nep", "nepviewer", "photovoltaik"],
   "domain": "nepviewer",
-  "documentation": "https://github.com/deinuser/nepviewer-homeassistant",
-  "issue_tracker": "https://github.com/deinuser/nepviewer-homeassistant/issues",
+  "documentation": "https://github.com/ip0p/nepviewer_homeassistant",
+  "issue_tracker": "https://github.com/ip0p/nepviewer_homeassistant/issues",
   "requirements": [],
   "dependencies": [],
-  "codeowners": ["@deinuser"]
+  "codeowners": ["@ip0p"]
 }
