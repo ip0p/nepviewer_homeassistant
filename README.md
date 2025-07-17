@@ -21,4 +21,4 @@ MIT License
 
 ---
 
-Projekt basiert auf liebevoller Arbeit von Basti ❤️
+Projekt basiert auf liebevoller Arbeit von Basti und Copilot ❤️
