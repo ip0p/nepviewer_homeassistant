@@ -5,6 +5,7 @@
   "dependencies": [],
   "codeowners": ["@ip0p"],
   "requirements": ["aiohttp"],
-  "version": "0.1.0",
-  "config_flow": true
+  "version": "0.1.3",
+  "config_flow": true,
+  "icon": "https://user.nepviewer.com/favicon.ico"
 }
