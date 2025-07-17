@@ -7,11 +7,10 @@ DOMAIN = "nepviewer"
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up nepviewer from a config entry."""
-    sn = entry.data.get("sn")
     token = entry.data.get("token")
     
-    if not sn or not token:
-        raise ConfigEntryNotReady("Missing 'sn' or 'token' in configuration")
+    if not token:
+        raise ConfigEntryNotReady("Missing 'token' in configuration")
     
     # Test API connectivity before setting up platforms
     try:

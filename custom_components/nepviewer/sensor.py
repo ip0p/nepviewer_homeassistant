@@ -8,10 +8,9 @@ import datetime
 DOMAIN = "nepviewer"
 
 class NepviewerCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass, session, sn, token, logger):
+    def __init__(self, hass, session, token, logger):
         super().__init__(hass, logger=logger, name=DOMAIN, update_interval=datetime.timedelta(seconds=60))
         self.session = session
-        self.sn = sn
         self.token = token
         self.status = "unknown"
 
@@ -97,15 +96,14 @@ class NepviewerStatusSensor(CoordinatorEntity, SensorEntity):
 
 async def async_setup_entry(hass, entry, async_add_entities):
     session = aiohttp.ClientSession()
-    sn = entry.data.get("sn")
     token = entry.data.get("token")
     logger = logging.getLogger(__name__)
 
-    if not sn or not token:
-        logger.error("Missing 'sn' or 'token' in configuration.")
+    if not token:
+        logger.error("Missing 'token' in configuration.")
         return False
 
-    coordinator = NepviewerCoordinator(hass, session, sn, token, logger)
+    coordinator = NepviewerCoordinator(hass, session, token, logger)
     await coordinator.async_config_entry_first_refresh()
 
     sensors = [
