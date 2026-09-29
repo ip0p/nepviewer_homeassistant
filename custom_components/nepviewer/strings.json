@@ -1,0 +1,38 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "This NEPViewer account is already configured."
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to NEPViewer.",
+      "invalid_auth": "The email address or password is invalid.",
+      "unknown": "Unexpected response from NEPViewer."
+    },
+    "step": {
+      "user": {
+        "title": "Connect NEPViewer",
+        "description": "Sign in with the same account as the working NEPViewer app.",
+        "data": {
+          "account": "Email address",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect NEPViewer",
+        "description": "The old API token has expired. Sign in to renew it automatically from now on.",
+        "data": {
+          "account": "Email address",
+          "password": "Password"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power": {"name": "Power"},
+      "energy_today": {"name": "Energy today"},
+      "energy_total": {"name": "Total energy"},
+      "status": {"name": "Status"}
+    }
+  }
+}

@@ -1,65 +1,51 @@
-from homeassistant.config_entries import ConfigEntry, ConfigEntryNotReady
+"""NEPViewer Solar integration."""
+
+from __future__ import annotations
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_TOKEN
 from homeassistant.core import HomeAssistant
-import aiohttp
-import logging
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.device_registry import DeviceEntry
 
-DOMAIN = "nepviewer"
+from .api import NepviewerApiClient, site_identifier
+from .const import CONF_ACCOUNT, CONF_COMPANY_ID, DOMAIN
+from .coordinator import NepviewerCoordinator
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up nepviewer from a config entry."""
-    token = entry.data.get("token")
-    
-    if not token:
-        raise ConfigEntryNotReady("Missing 'token' in configuration")
-    
-    # Test API connectivity before setting up platforms
-    try:
-        async with aiohttp.ClientSession() as session:
-            headers = {
-                "Authorization": token,
-                "Accept": "application/json, text/plain, */*",
-                "Content-Type": "application/json",
-                "app": "0",
-                "client": "web",
-                "oem": "NEP",
-            }
-            payload = {
-                "page": {
-                    "size": 10,
-                    "num": 0
-                },
-                "filters": {
-                    "keywords": "",
-                    "site_name": "",
-                    "user_email": "",
-                    "installer_email": "",
-                    "country_code": "",
-                    "created_start_date": "",
-                    "created_end_date": "",
-                    "street": ""
-                },
-                "sort": []
-            }
-            
-            logging.getLogger(__name__).info("Testing NEP API connectivity during setup")
-            async with session.post(
-                "https://api.nepviewer.net/v2/site/listWithSN",
-                headers=headers,
-                json=payload
-            ) as resp:
-                if resp.status != 200:
-                    raise ConfigEntryNotReady(f"NEP API not accessible (status: {resp.status})")
-                
-                logging.getLogger(__name__).info("NEP API connectivity test successful")
-                
-    except aiohttp.ClientError as err:
-        raise ConfigEntryNotReady(f"Failed to connect to NEP API: {err}")
-    except Exception as err:
-        raise ConfigEntryNotReady(f"Unexpected error during NEP API test: {err}")
-    
-    # API is accessible, proceed with platform setup
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+PLATFORMS = ["sensor"]
+
+type NepviewerConfigEntry = ConfigEntry[NepviewerCoordinator]
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: NepviewerConfigEntry) -> bool:
+    """Set up NEPViewer from a config entry."""
+    client = NepviewerApiClient(
+        async_get_clientsession(hass),
+        account=entry.data.get(CONF_ACCOUNT),
+        password=entry.data.get(CONF_PASSWORD),
+        token=entry.data.get(CONF_TOKEN),
+        company_id=entry.data.get(CONF_COMPANY_ID, 0),
+    )
+    coordinator = NepviewerCoordinator(hass, client)
+    await coordinator.async_config_entry_first_refresh()
+    entry.runtime_data = coordinator
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    return await hass.config_entries.async_forward_entry_unload(entry, "sensor")
+
+async def async_unload_entry(hass: HomeAssistant, entry: NepviewerConfigEntry) -> bool:
+    """Unload a NEPViewer config entry."""
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant,
+    entry: NepviewerConfigEntry,
+    device_entry: DeviceEntry,
+) -> bool:
+    """Allow removal of devices left behind by an obsolete site identifier."""
+    active_identifiers = {
+        (DOMAIN, site_identifier(site, index))
+        for index, site in enumerate(entry.runtime_data.data)
+    }
+    return not bool(active_identifiers & device_entry.identifiers)

@@ -1,13 +1,38 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Dieses NEPViewer-Konto ist bereits eingerichtet."
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu NEPViewer fehlgeschlagen.",
+      "invalid_auth": "E-Mail-Adresse oder Passwort ist ungültig.",
+      "unknown": "Unerwartete Antwort von NEPViewer."
+    },
     "step": {
       "user": {
-        "title": "Nepviewer verbinden",
-        "description": "Gib deinen Token ein.",
+        "title": "NEPViewer verbinden",
+        "description": "Melde dich mit demselben Konto wie in der funktionierenden NEPViewer-App an.",
         "data": {
-          "token": "Token"
+          "account": "E-Mail-Adresse",
+          "password": "Passwort"
+        }
+      },
+      "reauth_confirm": {
+        "title": "NEPViewer erneut verbinden",
+        "description": "Der alte API-Token ist abgelaufen. Nach dieser Anmeldung wird er künftig automatisch erneuert.",
+        "data": {
+          "account": "E-Mail-Adresse",
+          "password": "Passwort"
         }
       }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power": {"name": "Leistung"},
+      "energy_today": {"name": "Energie heute"},
+      "energy_total": {"name": "Gesamtenergie"},
+      "status": {"name": "Status"}
     }
   }
 }
