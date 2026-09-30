@@ -12,6 +12,8 @@ from .const import (
     API_BASE_URL,
     DEFAULT_COMPANY_ID,
     DEFAULT_LANGUAGE,
+    DEVICE_DETAIL_ENDPOINT,
+    DEVICE_OVERVIEW_ENDPOINT,
     LOGIN_ENDPOINT,
     SITES_ENDPOINT,
 )
@@ -67,6 +69,7 @@ class NepviewerApiClient:
         self._password = password
         self._token = token
         self._company_id = company_id
+        self._device_details: dict[str, dict[str, Any]] = {}
 
     @property
     def account(self) -> str | None:
@@ -121,6 +124,30 @@ class NepviewerApiClient:
         if not isinstance(sites, list):
             raise NepviewerError("NEPViewer returned an invalid site list")
         return [site for site in sites if isinstance(site, dict)]
+
+    async def async_get_device_detail(self, serial_number: str) -> dict[str, Any]:
+        """Return static details for an inverter, caching them between polls."""
+        if serial_number in self._device_details:
+            return self._device_details[serial_number]
+
+        response = await self._async_request(
+            DEVICE_DETAIL_ENDPOINT, {"sn": serial_number}
+        )
+        detail = response.get("data") or {}
+        if not isinstance(detail, dict):
+            raise NepviewerError("NEPViewer returned invalid device details")
+        self._device_details[serial_number] = detail
+        return detail
+
+    async def async_get_device_overview(self, serial_number: str) -> dict[str, Any]:
+        """Return the production overview shown by the NEPViewer device page."""
+        response = await self._async_request(
+            DEVICE_OVERVIEW_ENDPOINT, {"sn": serial_number}
+        )
+        overview = response.get("data") or {}
+        if not isinstance(overview, dict):
+            raise NepviewerError("NEPViewer returned an invalid device overview")
+        return overview
 
     async def _async_request(
         self,

@@ -5,8 +5,13 @@ Diese Integration verbindet deinen Home Assistant mit deiner NEP Solarüberwachu
 ## Features
 - Aktuelle Solarleistung (Watt)
 - Heute erzeugte Energie (kWh)
+- Gestern, Monat und Jahr erzeugte Energie (kWh)
 - Gesamterzeugung (kWh)
+- Einnahmen für heute, gestern, Monat und gesamt
+- CO₂-Einsparung, Fahrstrecke, Öl- und Baumäquivalent
+- Letzte Aktualisierung als Diagnose-Sensor
 - Status der Anlage
+- Modell, Seriennummer und Firmware sowie weitere Geräteinformationen
 - Mehrere Anlagen pro NEPViewer-Konto
 - Automatische Erneuerung abgelaufener API-Tokens
 

@@ -146,3 +146,58 @@ def test_expired_token_is_renewed_once():
     assert len(session.requests) == 3
     assert session.requests[0][2]["Authorization"] == "expired-token"
     assert session.requests[2][2]["Authorization"] == "renewed-token"
+
+
+def test_device_details_are_cached_between_polls():
+    session = FakeSession(
+        [
+            FakeResponse(
+                200,
+                {
+                    "code": 200,
+                    "data": {
+                        "model": "BDM-600X",
+                        "version": "8a01",
+                        "timezone": "Europe/Berlin",
+                    },
+                },
+            )
+        ]
+    )
+    client = NepviewerApiClient(session, token="valid-token")
+
+    first = asyncio.run(client.async_get_device_detail("EXAMPLE123"))
+    second = asyncio.run(client.async_get_device_detail("EXAMPLE123"))
+
+    assert first == second
+    assert first["model"] == "BDM-600X"
+    assert len(session.requests) == 1
+    url, body, _headers = session.requests[0]
+    assert url.endswith("/v2/device/detail")
+    assert json.loads(body) == {"sn": "EXAMPLE123"}
+
+
+def test_device_overview_exposes_production_and_environmental_values():
+    session = FakeSession(
+        [
+            FakeResponse(
+                200,
+                {
+                    "code": 200,
+                    "data": {
+                        "production": {"month": "6.6", "total": "7.2"},
+                        "environmentalBenefit": {"co2": "7.24"},
+                    },
+                },
+            )
+        ]
+    )
+    client = NepviewerApiClient(session, token="valid-token")
+
+    overview = asyncio.run(client.async_get_device_overview("EXAMPLE123"))
+
+    assert overview["production"]["month"] == "6.6"
+    assert overview["environmentalBenefit"]["co2"] == "7.24"
+    url, body, _headers = session.requests[0]
+    assert url.endswith("/v2/device/statistics/overview")
+    assert json.loads(body) == {"sn": "EXAMPLE123"}

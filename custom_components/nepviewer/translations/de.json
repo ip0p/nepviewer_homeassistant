@@ -31,7 +31,19 @@
     "sensor": {
       "power": {"name": "Leistung"},
       "energy_today": {"name": "Energie heute"},
+      "energy_yesterday": {"name": "Energie gestern"},
+      "energy_month": {"name": "Energie diesen Monat"},
+      "energy_year": {"name": "Energie dieses Jahr"},
       "energy_total": {"name": "Gesamtenergie"},
+      "income_today": {"name": "Einnahmen heute"},
+      "income_yesterday": {"name": "Einnahmen gestern"},
+      "income_month": {"name": "Einnahmen diesen Monat"},
+      "income_total": {"name": "Gesamteinnahmen"},
+      "co2_savings": {"name": "CO2-Einsparung"},
+      "driving_distance": {"name": "Entsprechende Fahrstrecke"},
+      "oil_savings": {"name": "Öleinsparung"},
+      "tree_equivalent": {"name": "Baumäquivalent"},
+      "last_update": {"name": "Letzte Aktualisierung"},
       "status": {"name": "Status"}
     }
   }
