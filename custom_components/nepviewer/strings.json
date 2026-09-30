@@ -1,0 +1,50 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "This NEPViewer account is already configured."
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to NEPViewer.",
+      "invalid_auth": "The email address or password is invalid.",
+      "unknown": "Unexpected response from NEPViewer."
+    },
+    "step": {
+      "user": {
+        "title": "Connect NEPViewer",
+        "description": "Sign in with the same account as the working NEPViewer app.",
+        "data": {
+          "account": "Email address",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect NEPViewer",
+        "description": "The old API token has expired. Sign in to renew it automatically from now on.",
+        "data": {
+          "account": "Email address",
+          "password": "Password"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power": {"name": "Power"},
+      "energy_today": {"name": "Energy today"},
+      "energy_yesterday": {"name": "Energy yesterday"},
+      "energy_month": {"name": "Energy this month"},
+      "energy_year": {"name": "Energy this year"},
+      "energy_total": {"name": "Total energy"},
+      "income_today": {"name": "Income today"},
+      "income_yesterday": {"name": "Income yesterday"},
+      "income_month": {"name": "Income this month"},
+      "income_total": {"name": "Total income"},
+      "co2_savings": {"name": "CO2 savings"},
+      "driving_distance": {"name": "Equivalent driving distance"},
+      "oil_savings": {"name": "Oil savings"},
+      "tree_equivalent": {"name": "Tree equivalent"},
+      "last_update": {"name": "Last update"},
+      "status": {"name": "Status"}
+    }
+  }
+}

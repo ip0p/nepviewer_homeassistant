@@ -1,13 +1,50 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Dieses NEPViewer-Konto ist bereits eingerichtet."
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu NEPViewer fehlgeschlagen.",
+      "invalid_auth": "E-Mail-Adresse oder Passwort ist ungültig.",
+      "unknown": "Unerwartete Antwort von NEPViewer."
+    },
     "step": {
       "user": {
-        "title": "Nepviewer verbinden",
-        "description": "Gib deinen Token ein.",
+        "title": "NEPViewer verbinden",
+        "description": "Melde dich mit demselben Konto wie in der funktionierenden NEPViewer-App an.",
         "data": {
-          "token": "Token"
+          "account": "E-Mail-Adresse",
+          "password": "Passwort"
+        }
+      },
+      "reauth_confirm": {
+        "title": "NEPViewer erneut verbinden",
+        "description": "Der alte API-Token ist abgelaufen. Nach dieser Anmeldung wird er künftig automatisch erneuert.",
+        "data": {
+          "account": "E-Mail-Adresse",
+          "password": "Passwort"
         }
       }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power": {"name": "Leistung"},
+      "energy_today": {"name": "Energie heute"},
+      "energy_yesterday": {"name": "Energie gestern"},
+      "energy_month": {"name": "Energie diesen Monat"},
+      "energy_year": {"name": "Energie dieses Jahr"},
+      "energy_total": {"name": "Gesamtenergie"},
+      "income_today": {"name": "Einnahmen heute"},
+      "income_yesterday": {"name": "Einnahmen gestern"},
+      "income_month": {"name": "Einnahmen diesen Monat"},
+      "income_total": {"name": "Gesamteinnahmen"},
+      "co2_savings": {"name": "CO2-Einsparung"},
+      "driving_distance": {"name": "Entsprechende Fahrstrecke"},
+      "oil_savings": {"name": "Öleinsparung"},
+      "tree_equivalent": {"name": "Baumäquivalent"},
+      "last_update": {"name": "Letzte Aktualisierung"},
+      "status": {"name": "Status"}
     }
   }
 }

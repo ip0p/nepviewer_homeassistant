@@ -5,16 +5,36 @@ Diese Integration verbindet deinen Home Assistant mit deiner NEP Solarüberwachu
 ## Features
 - Aktuelle Solarleistung (Watt)
 - Heute erzeugte Energie (kWh)
+- Gestern, Monat und Jahr erzeugte Energie (kWh)
 - Gesamterzeugung (kWh)
+- Einnahmen für heute, gestern, Monat und gesamt
+- CO₂-Einsparung, Fahrstrecke, Öl- und Baumäquivalent
+- Letzte Aktualisierung als Diagnose-Sensor
+- Status der Anlage
+- Modell, Seriennummer und Firmware sowie weitere Geräteinformationen
+- Mehrere Anlagen pro NEPViewer-Konto
+- Automatische Erneuerung abgelaufener API-Tokens
 
 ## Installation
 1. Über HACS als benutzerdefiniertes Repository hinzufügen.
 2. Integration "Nepviewer Solar" installieren.
-3. Seriennummer (SN) und aktuellen API-Token eingeben.
+3. Integration über **Einstellungen → Geräte & Dienste → Integration hinzufügen**
+   einrichten.
+4. Mit derselben E-Mail-Adresse und demselben Passwort wie in der
+   NEPViewer-App anmelden.
 
 ## Hinweise
-- Der Token läuft nach einiger Zeit ab. Eine spätere automatische Verlängerung ist geplant.
-- Nur getestet mit v2-API von nepviewer.net.
+- Die Integration meldet sich bei Bedarf automatisch neu an, wenn der
+  kurzlebige NEPViewer-Token abläuft.
+- Getestet mit der v2-API von nepviewer.net und Home Assistant 2026.9.4.
+- Bestehende Konfigurationen mit einem alten Token zeigen nach dessen Ablauf
+  einen Reparaturdialog zur einmaligen Anmeldung an.
+
+## Entwicklung
+
+Die API-Tests können mit `pytest -q tests/test_nepviewer_api.py` ausgeführt
+werden. Sie prüfen die aktuelle Request-Signatur, Anmeldung und automatische
+Token-Erneuerung.
 
 ## Lizenz
 MIT License
