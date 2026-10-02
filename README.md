@@ -1,5 +1,9 @@
 # Nepviewer Solar for Home Assistant
 
+<p align="center">
+  <img src="custom_components/nepviewer/brand/logo.png" alt="NEP logo" width="420">
+</p>
+
 This integration connects Home Assistant to your NEP solar monitoring system.
 
 ## Features
