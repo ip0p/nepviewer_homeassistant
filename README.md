@@ -1,44 +1,38 @@
-# Nepviewer Solar für Home Assistant
+# Nepviewer Solar for Home Assistant
 
-Diese Integration verbindet deinen Home Assistant mit deiner NEP Solarüberwachung.
+This integration connects Home Assistant to your NEP solar monitoring system.
 
 ## Features
-- Aktuelle Solarleistung (Watt)
-- Heute erzeugte Energie (kWh)
-- Gestern, Monat und Jahr erzeugte Energie (kWh)
-- Gesamterzeugung (kWh)
-- Einnahmen für heute, gestern, Monat und gesamt
-- CO₂-Einsparung, Fahrstrecke, Öl- und Baumäquivalent
-- Letzte Aktualisierung als Diagnose-Sensor
-- Status der Anlage
-- Modell, Seriennummer und Firmware sowie weitere Geräteinformationen
-- Mehrere Anlagen pro NEPViewer-Konto
-- Automatische Erneuerung abgelaufener API-Tokens
+- Current solar power (W)
+- Energy generated today (kWh)
+- Energy generated yesterday, this month, and this year (kWh)
+- Total energy generated (kWh)
+- Earnings today, yesterday, this month, and overall
+- CO₂ savings, driving distance, and oil and tree equivalents
+- Last update time as a diagnostic sensor
+- System status
+- Model, serial number, firmware, and other device information
+- Multiple systems per NEPViewer account
+- Automatic renewal of expired API tokens
 
 ## Installation
-1. Über HACS als benutzerdefiniertes Repository hinzufügen.
-2. Integration "Nepviewer Solar" installieren.
-3. Integration über **Einstellungen → Geräte & Dienste → Integration hinzufügen**
-   einrichten.
-4. Mit derselben E-Mail-Adresse und demselben Passwort wie in der
-   NEPViewer-App anmelden.
 
-## Hinweise
-- Die Integration meldet sich bei Bedarf automatisch neu an, wenn der
-  kurzlebige NEPViewer-Token abläuft.
-- Getestet mit der v2-API von nepviewer.net und Home Assistant 2026.9.4.
-- Bestehende Konfigurationen mit einem alten Token zeigen nach dessen Ablauf
-  einen Reparaturdialog zur einmaligen Anmeldung an.
+[![Open your Home Assistant instance and add this repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ip0p&repository=nepviewer_homeassistant&category=integration)
 
-## Entwicklung
+1. Add the repository to HACS using the button above, or add it as a custom repository.
+2. Install the **Nepviewer Solar** integration.
+3. Set up the integration under **Settings → Devices & services → Add integration**.
+4. Sign in with the same email address and password you use for the NEPViewer app.
 
-Die API-Tests können mit `pytest -q tests/test_nepviewer_api.py` ausgeführt
-werden. Sie prüfen die aktuelle Request-Signatur, Anmeldung und automatische
-Token-Erneuerung.
+## Notes
+- The integration automatically signs in again when the short-lived NEPViewer token expires.
+- Tested with the v2 API at nepviewer.net and Home Assistant 2026.9.4.
+- Existing configurations using an old token will show a repair dialog to sign in once it expires.
 
-## Lizenz
+## Development
+
+Run the API tests with `pytest -q tests/test_nepviewer_api.py`. They check the
+current request signature, sign-in, and automatic token renewal.
+
+## License
 MIT License
-
----
-
-Projekt basiert auf liebevoller Arbeit von Basti und Copilot ❤️
