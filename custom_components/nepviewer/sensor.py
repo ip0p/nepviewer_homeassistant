@@ -14,7 +14,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    CURRENCY_EURO,
     EntityCategory,
     UnitOfEnergy,
     UnitOfLength,
@@ -134,7 +133,6 @@ SENSORS = (
         NepviewerSensorDescription(
             key=f"income_{period}",
             translation_key=f"income_{period}",
-            native_unit_of_measurement=CURRENCY_EURO,
             device_class=SensorDeviceClass.MONETARY,
             # Monetary sensors only allow TOTAL, so periodic ones need a last_reset.
             state_class=SensorStateClass.TOTAL if period != "yesterday" else None,
@@ -236,6 +234,10 @@ class NepviewerSensor(CoordinatorEntity[NepviewerCoordinator], SensorEntity):
         self.entity_description = description
         self._site_id = site_id
         self._attr_unique_id = f"{site_id}_{description.key}"
+        if description.device_class == SensorDeviceClass.MONETARY:
+            # NEPViewer reports income in the price currency set in its app,
+            # which it doesn't expose, so use the currency configured in HA.
+            self._attr_native_unit_of_measurement = coordinator.hass.config.currency
         site = next(
             (
                 candidate
