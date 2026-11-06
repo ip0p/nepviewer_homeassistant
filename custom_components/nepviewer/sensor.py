@@ -111,6 +111,7 @@ SENSORS = (
         translation_key="energy_yesterday",
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=lambda site: _nested_value(site, "production", "yesterday"),
     ),
     NepviewerSensorDescription(
