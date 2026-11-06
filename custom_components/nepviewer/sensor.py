@@ -14,7 +14,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    CURRENCY_EURO,
     EntityCategory,
     UnitOfEnergy,
     UnitOfLength,
@@ -24,6 +23,7 @@ from homeassistant.const import (
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from . import NepviewerConfigEntry
 from .api import site_identifier
@@ -36,6 +36,7 @@ class NepviewerSensorDescription(SensorEntityDescription):
     """Describe a NEPViewer sensor."""
 
     value_fn: Callable[[dict[str, Any]], Any]
+    last_reset_fn: Callable[[], datetime] | None = None
 
 
 def _nested_value(site: dict[str, Any], section: str, key: str) -> Any:
@@ -67,6 +68,10 @@ def _money(site: dict[str, Any], period: str) -> float | None:
         return money_value
 
 
+def _start_of_month() -> datetime:
+    return dt_util.start_of_local_day().replace(day=1)
+
+
 def _last_update(site: dict[str, Any]) -> datetime | None:
     overview = site.get("_overview") or {}
     timestamp = overview.get("lastUpdateTime") or site.get("lastUpdateTime")
@@ -90,7 +95,7 @@ SENSORS = (
         translation_key="energy_today",
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=lambda site: site.get("todayPower"),
     ),
     NepviewerSensorDescription(
@@ -106,7 +111,6 @@ SENSORS = (
         translation_key="energy_yesterday",
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL,
         value_fn=lambda site: _nested_value(site, "production", "yesterday"),
     ),
     NepviewerSensorDescription(
@@ -114,7 +118,7 @@ SENSORS = (
         translation_key="energy_month",
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=lambda site: _nested_value(site, "production", "month"),
     ),
     NepviewerSensorDescription(
@@ -122,20 +126,26 @@ SENSORS = (
         translation_key="energy_year",
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         value_fn=lambda site: _nested_value(site, "production", "year"),
     ),
     *(
         NepviewerSensorDescription(
             key=f"income_{period}",
             translation_key=f"income_{period}",
-            native_unit_of_measurement=CURRENCY_EURO,
             device_class=SensorDeviceClass.MONETARY,
-            state_class=SensorStateClass.TOTAL,
+            # Monetary sensors only allow TOTAL, so periodic ones need a last_reset.
+            state_class=SensorStateClass.TOTAL if period != "yesterday" else None,
             suggested_display_precision=2,
             value_fn=lambda site, period=period: _money(site, period),
+            last_reset_fn=last_reset_fn,
         )
-        for period in ("today", "yesterday", "month", "total")
+        for period, last_reset_fn in (
+            ("today", dt_util.start_of_local_day),
+            ("yesterday", None),
+            ("month", _start_of_month),
+            ("total", None),
+        )
     ),
     NepviewerSensorDescription(
         key="co2_savings",
@@ -224,6 +234,10 @@ class NepviewerSensor(CoordinatorEntity[NepviewerCoordinator], SensorEntity):
         self.entity_description = description
         self._site_id = site_id
         self._attr_unique_id = f"{site_id}_{description.key}"
+        if description.device_class == SensorDeviceClass.MONETARY:
+            # NEPViewer reports income in the price currency set in its app,
+            # which it doesn't expose, so use the currency configured in HA.
+            self._attr_native_unit_of_measurement = coordinator.hass.config.currency
         site = next(
             (
                 candidate
@@ -252,6 +266,13 @@ class NepviewerSensor(CoordinatorEntity[NepviewerCoordinator], SensorEntity):
         if site is None:
             return None
         return self.entity_description.value_fn(site)
+
+    @property
+    def last_reset(self) -> datetime | None:
+        """Return when a periodic total last started from zero."""
+        if self.entity_description.last_reset_fn is None:
+            return None
+        return self.entity_description.last_reset_fn()
 
     @property
     def available(self) -> bool:

@@ -33,6 +33,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: NepviewerConfigEntry) ->
     return True
 
 
+async def async_migrate_entry(hass: HomeAssistant, entry: NepviewerConfigEntry) -> bool:
+    """Migrate token-only entries created before credentials were stored."""
+    if entry.version > 2:
+        return False
+    if entry.version == 1:
+        # Keep the legacy token; once it expires the reauth flow asks for
+        # credentials and stores them on the entry.
+        hass.config_entries.async_update_entry(entry, version=2)
+    return True
+
+
 async def async_unload_entry(hass: HomeAssistant, entry: NepviewerConfigEntry) -> bool:
     """Unload a NEPViewer config entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
