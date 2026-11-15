@@ -40,3 +40,27 @@ current request signature, sign-in, and automatic token renewal.
 
 ## License
 MIT License
+
+## Site totals and inverter entities
+
+Array production and benefits come from `v2/site/overview`, requested with the
+site's `sid`. The `statisticsProduction` object supplies the whole site's
+power, daily/monthly/yearly/lifetime energy and income. Each inverter in
+`deviceList` gets a child device with current power, today's energy and status.
+Site totals are not calculated by summing instantaneous inverter readings.
+
+Energy units are normalized to kWh. One observed API variant returns yesterday's
+energy in Wh with an empty `yesterdayUnit`; this specific case is converted to
+kWh. Other missing or unrecognized energy units are left unknown. When period
+income is zero or missing, the integration estimates it using that period's
+energy and the site's configured electricity price. Nonzero reported income is
+preserved and the site's currency is used.
+
+Previously recorded incorrect sensor history is not corrected automatically.
+Per-panel/MPPT readings and inverter historical statistics are not provided by
+this implementation. Site `lastUpdate` text is interpreted in the Home Assistant
+timezone, which should match the site's timezone.
+
+Run all regression tests with `python -m pytest -q` after installing `pytest`
+and `aiohttp`. Platform smoke tests use lightweight Home Assistant interfaces;
+a live Home Assistant installation is still needed for end-to-end validation.

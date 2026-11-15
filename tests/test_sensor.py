@@ -11,7 +11,7 @@ SENSOR_PATH = (
 )
 
 
-def test_energy_sensors_use_total_increasing_state_class():
+def test_energy_sensor_state_classes():
     module = ast.parse(SENSOR_PATH.read_text())
     sensors = next(
         node.value
@@ -37,12 +37,10 @@ def test_energy_sensors_use_total_increasing_state_class():
     ]
 
     assert energy_sensors
-    assert all(
-        any(
-            keyword.arg == "state_class"
-            and isinstance(keyword.value, ast.Attribute)
-            and keyword.value.attr == "TOTAL_INCREASING"
-            for keyword in sensor.keywords
-        )
-        for sensor in energy_sensors
-    )
+    for sensor in energy_sensors:
+        key = next(k.value.value for k in sensor.keywords if k.arg == "key")
+        state_class = next(k.value for k in sensor.keywords if k.arg == "state_class")
+        if key == "energy_yesterday":
+            assert isinstance(state_class, ast.Constant) and state_class.value is None
+        else:
+            assert state_class.attr == "TOTAL_INCREASING"
