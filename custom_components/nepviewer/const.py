@@ -7,6 +7,7 @@ CONF_COMPANY_ID = "company_id"
 
 API_BASE_URL = "https://api.nepviewer.net/"
 LOGIN_ENDPOINT = "v2/sign-in"
+SITE_OVERVIEW_ENDPOINT = "v2/site/overview"
 SITES_ENDPOINT = "v2/site/listWithSN"
 DEVICE_DETAIL_ENDPOINT = "v2/device/detail"
 DEVICE_OVERVIEW_ENDPOINT = "v2/device/statistics/overview"
