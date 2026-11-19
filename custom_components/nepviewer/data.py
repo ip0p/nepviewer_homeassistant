@@ -37,7 +37,7 @@ def income(overview, period):
             return float(Decimal(str(energy)) * Decimal(str(price)))
         except InvalidOperation:
             return None
-    return raw
+    return raw if energy == 0 else None
 
 
 def site_value(site, period):
