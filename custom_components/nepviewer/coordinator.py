@@ -13,7 +13,6 @@ from .api import (
     NepviewerApiClient,
     NepviewerAuthenticationError,
     NepviewerError,
-    site_identifier,
 )
 from .const import DOMAIN, UPDATE_INTERVAL_SECONDS
 
@@ -35,32 +34,17 @@ class NepviewerCoordinator(DataUpdateCoordinator[list[dict]]):
     async def _async_update_data(self) -> list[dict]:
         try:
             sites = await self.client.async_get_sites()
+            if not sites:
+                _LOGGER.warning("NEPViewer returned no sites; check this account's site permissions")
             for index, site in enumerate(sites):
-                site_id = site_identifier(site, index)
-                devices = site.get("sn")
-                if not isinstance(devices, list) or not devices:
-                    continue
-                serial_number = devices[0].get("sn")
-                if not serial_number:
-                    continue
-                try:
-                    site["_overview"] = await self.client.async_get_device_overview(
-                        str(serial_number)
-                    )
-                except NepviewerAuthenticationError:
-                    raise
-                except NepviewerError as err:
-                    _LOGGER.debug("Could not fetch overview for %s: %s", site_id, err)
-                try:
-                    site["_device_detail"] = await self.client.async_get_device_detail(
-                        str(serial_number)
-                    )
-                except NepviewerAuthenticationError:
-                    raise
-                except NepviewerError as err:
-                    _LOGGER.debug(
-                        "Could not fetch device details for %s: %s", site_id, err
-                    )
+                sid = site.get("sid")
+                if not isinstance(sid, (str, int)) or not str(sid):
+                    raise NepviewerError("Site is missing the sid required by site/overview")
+                site["_site_overview"] = await self.client.async_get_site_overview(str(sid))
+                _LOGGER.debug(
+                    "Site overview received: %s inverter(s)",
+                    len(site["_site_overview"].get("deviceList", [])),
+                )
         except NepviewerAuthenticationError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except NepviewerError as err:
