@@ -16,6 +16,7 @@ from .const import (
     DEVICE_OVERVIEW_ENDPOINT,
     LOGIN_ENDPOINT,
     SITES_ENDPOINT,
+    SITE_OVERVIEW_ENDPOINT,
 )
 
 
@@ -124,6 +125,18 @@ class NepviewerApiClient:
         if not isinstance(sites, list):
             raise NepviewerError("NEPViewer returned an invalid site list")
         return [site for site in sites if isinstance(site, dict)]
+
+    async def async_get_site_overview(self, sid: str) -> dict[str, Any]:
+        """Return whole-site production and the individual inverter list."""
+        response = await self._async_request(SITE_OVERVIEW_ENDPOINT, {"sid": sid})
+        overview = response.get("data")
+        if not isinstance(overview, dict):
+            raise NepviewerError("NEPViewer returned an invalid site overview")
+        if not isinstance(overview.get("statisticsProduction"), dict):
+            raise NepviewerError("Site overview is missing statisticsProduction")
+        if not isinstance(overview.get("deviceList", []), list):
+            raise NepviewerError("Site overview has an invalid deviceList")
+        return overview
 
     async def async_get_device_detail(self, serial_number: str) -> dict[str, Any]:
         """Return static details for an inverter, caching them between polls."""

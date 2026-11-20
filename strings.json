@@ -1,6 +1,6 @@
 {
   "name": "NEPViewer Solar",
-  "description": "Eine Home Assistant Integration für NEP Solarüberwachung. Zeigt aktuelle Leistung, Tages- und Gesamtertrag.",
+  "description": "This integration connects Home Assistant to your NEP solar monitoring system.",
   "author": "ip0p",
   "keywords": ["solar", "nep", "nepviewer", "photovoltaik"],
   "domain": "nepviewer",
