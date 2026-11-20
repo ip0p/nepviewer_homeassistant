@@ -31,6 +31,13 @@ class CoordinatorEntity:
     def available(self):
         return self.coordinator.last_update_success
 
+    @property
+    def hass(self):
+        return self.coordinator.hass
+
+    def _handle_coordinator_update(self):
+        pass
+
 
 class DataUpdateCoordinator:
     def __class_getitem__(cls, item):
@@ -70,9 +77,26 @@ module('homeassistant.const', EntityCategory=types.SimpleNamespace(DIAGNOSTIC='d
     UnitOfMass=types.SimpleNamespace(KILOGRAMS='kg'),
     UnitOfPower=types.SimpleNamespace(WATT='W'))
 module('homeassistant.config_entries', ConfigEntryAuthFailed=type('ConfigEntryAuthFailed', (Exception,), {}))
-module('homeassistant.core', HomeAssistant=object)
+module('homeassistant.core', HomeAssistant=object, callback=lambda fn: fn)
 module('homeassistant.helpers')
-module('homeassistant.helpers.device_registry', DeviceInfo=dict)
+class Registry:
+    def __init__(self):
+        self.device = types.SimpleNamespace(id='test-inverter', model='Old model',
+                                           serial_number='TEST0', sw_version=None)
+        self.updates = []
+
+    def async_get_device(self, *, identifiers):
+        assert identifiers == {('nepviewer', 'TEST_SITE_inverter_TEST0')}
+        return self.device
+
+    def async_update_device(self, device_id, **updates):
+        assert device_id == self.device.id
+        self.updates.append(updates)
+        for key, value in updates.items():
+            setattr(self.device, key, value)
+
+registry = Registry()
+module('homeassistant.helpers.device_registry', DeviceInfo=dict, async_get=lambda hass: registry)
 module('homeassistant.helpers.entity_platform', AddConfigEntryEntitiesCallback=object)
 module('homeassistant.helpers.update_coordinator', CoordinatorEntity=CoordinatorEntity,
     DataUpdateCoordinator=DataUpdateCoordinator, UpdateFailed=type('UpdateFailed', (Exception,), {}))
@@ -95,7 +119,10 @@ class Client:
 
     async def async_get_site_overview(self, sid):
         assert sid == 'TEST_SITE'
-        return OVERVIEW
+        return {**OVERVIEW, 'deviceList': [dict(d) for d in OVERVIEW['deviceList']]}
+
+    async def async_get_device_detail(self, serial):
+        return {'sn': serial, 'modelTitle': 'BDM-2000', 'version': '8a01'}
 
 
 hass=types.SimpleNamespace(config=types.SimpleNamespace(currency='EUR'))
@@ -118,6 +145,18 @@ assert by_key['last_update'].native_value.isoformat() == '2026-11-15T15:02:00-05
 assert entities[16].native_value == 286
 assert entities[17].native_value == 1.097
 assert entities[16]._attr_device_info['via_device'] == ('nepviewer', 'TEST_SITE')
+assert entities[16]._attr_device_info['model'] == 'BDM-2000'
+assert entities[16]._attr_device_info['serial_number'] == 'TEST0'
+assert entities[16]._attr_device_info['sw_version'] == '8a01'
+assert entities[18].extra_state_attributes == {
+    'model': 'BDM-2000', 'serial_number': 'TEST0', 'sw_version': '8a01'}
+entities[18]._handle_coordinator_update()
+assert registry.device.sw_version == '8a01'
+assert registry.device.model == 'BDM-2000'
+assert len(registry.updates) == 1
+entities[18]._handle_coordinator_update()
+assert len(registry.updates) == 1  # unchanged metadata does not churn registry
+
 assert by_key['power']._attr_unique_id == 'TEST_SITE_power'
 coordinator.listeners[0]()
 assert len(entities) == 40  # no duplicates across polls
@@ -145,3 +184,41 @@ except sys.modules['homeassistant.helpers.update_coordinator'].UpdateFailed:
 else:
     raise AssertionError('Site failures must not silently show stale device totals')
 print('PASS: 40 entities, site/inverter separation, units, currency, discovery, unavailable/error handling')
+
+
+class MetadataUnavailable(Client):
+    async def async_get_device_detail(self, serial):
+        raise NepviewerError('Optional detail endpoint unavailable')
+
+partial = NepviewerCoordinator(hass, MetadataUnavailable())
+partial.data = asyncio.run(partial._async_update_data())
+assert len(partial.data[0]['_site_overview']['deviceList']) == 8
+inverter = partial.data[0]['_site_overview']['deviceList'][0]
+entity = sensor.NepviewerInverterSensor(partial, 'TEST_SITE', 'Test plant',
+                                       inverter, sensor.INVERTER_SENSORS[2])
+assert entity._attr_device_info['model'] == 'BDM-2000'
+assert entity._attr_device_info['serial_number'] == 'TEST0'
+assert 'sw_version' not in entity._attr_device_info
+assert entity.available
+inverter['otaInfo'] = {'nowVersion': 'current-firmware', 'targetVersion': 'future-firmware'}
+assert entity._inverter_device_info(inverter)['sw_version'] == 'current-firmware'
+inverter['otaInfo']['nowVersion'] = ''
+assert 'sw_version' not in entity._inverter_device_info(inverter)
+# Metadata arriving later updates the device instead of requiring entity recreation.
+inverter['_device_detail'] = {'modelTitle': 'BDM-2000', 'version': '8a02'}
+entity._handle_coordinator_update()
+assert registry.device.sw_version == '8a02'
+assert entity._attr_unique_id == 'TEST_SITE_inverter_TEST0_status'
+assert len(registry.updates) == 2
+
+from custom_components.nepviewer.api import NepviewerAuthenticationError
+class MetadataAuthFailure(Client):
+    async def async_get_device_detail(self, serial):
+        raise NepviewerAuthenticationError('Credentials rejected')
+try:
+    asyncio.run(NepviewerCoordinator(hass, MetadataAuthFailure())._async_update_data())
+except sys.modules['homeassistant.config_entries'].ConfigEntryAuthFailed:
+    pass
+else:
+    raise AssertionError('Authentication failures must still initiate reauthentication')
+print('PASS: model/serial/firmware, optional metadata failure, current OTA fallback, registry refresh, auth errors')
