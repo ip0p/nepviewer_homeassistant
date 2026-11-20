@@ -41,6 +41,18 @@ class NepviewerCoordinator(DataUpdateCoordinator[list[dict]]):
                 if not isinstance(sid, (str, int)) or not str(sid):
                     raise NepviewerError("Site is missing the sid required by site/overview")
                 site["_site_overview"] = await self.client.async_get_site_overview(str(sid))
+                for device in site["_site_overview"].get("deviceList", []):
+                    if not isinstance(device, dict) or not device.get("sn"):
+                        continue
+                    try:
+                        device["_device_detail"] = await self.client.async_get_device_detail(
+                            str(device["sn"])
+                        )
+                    except NepviewerAuthenticationError:
+                        raise
+                    except NepviewerError as err:
+                        # Optional metadata must not hide valid production readings.
+                        _LOGGER.debug("Could not fetch inverter metadata: %s", err)
                 _LOGGER.debug(
                     "Site overview received: %s inverter(s)",
                     len(site["_site_overview"].get("deviceList", [])),
