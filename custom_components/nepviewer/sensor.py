@@ -20,6 +20,8 @@ from homeassistant.const import (
     UnitOfMass,
     UnitOfPower,
 )
+from homeassistant.core import callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -352,17 +354,64 @@ class NepviewerInverterSensor(CoordinatorEntity[NepviewerCoordinator], SensorEnt
         super().__init__(coordinator)
         self._site_id = site_id
         self._serial = str(device["sn"])
+        self._site_name = site_name
         self.entity_description = description
         self._attr_unique_id = f"{site_id}_inverter_{self._serial}_{description.key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, f"{site_id}_inverter_{self._serial}")},
-            via_device=(DOMAIN, site_id),
-            name=f"{site_name} inverter {self._serial}",
+        self._attr_device_info = self._inverter_device_info(device)
+
+    def _inverter_device_info(self, device):
+        detail = device.get("_device_detail") or {}
+        ota_info = device.get("otaInfo") or {}
+        version = detail.get("version")
+        if version is None or str(version).strip() == "":
+            version = ota_info.get("nowVersion")
+        info = DeviceInfo(
+            identifiers={(DOMAIN, f"{self._site_id}_inverter_{self._serial}")},
+            via_device=(DOMAIN, self._site_id),
+            name=f"{self._site_name} inverter {self._serial}",
             manufacturer="Northern Electric & Power",
-            model=device.get("modelTitle") or device.get("modelName"),
             serial_number=self._serial,
             configuration_url="https://user.nepviewer.com/",
         )
+        model = (detail.get("modelTitle") or detail.get("modelName")
+                 or device.get("modelTitle") or device.get("modelName"))
+        if model:
+            info["model"] = str(model)
+        if version is not None and str(version).strip():
+            info["sw_version"] = str(version)
+        return info
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        device = self._device
+        if device is not None:
+            self._attr_device_info = self._inverter_device_info(device)
+            # Only one of the three sensors needs to synchronize the registry.
+            if self.entity_description.key == "status":
+                registry = dr.async_get(self.hass)
+                registered = registry.async_get_device(
+                    identifiers=self._attr_device_info["identifiers"]
+                )
+                if registered is not None:
+                    updates = {
+                        key: self._attr_device_info[key]
+                        for key in ("model", "serial_number", "sw_version")
+                        if key in self._attr_device_info
+                        and getattr(registered, key, None) != self._attr_device_info[key]
+                    }
+                    if updates:
+                        registry.async_update_device(registered.id, **updates)
+        super()._handle_coordinator_update()
+
+    @property
+    def extra_state_attributes(self):
+        if self.entity_description.key != "status" or self._device is None:
+            return {}
+        info = self._inverter_device_info(self._device)
+        return {
+            key: info[key] for key in ("model", "serial_number", "sw_version")
+            if key in info
+        }
 
     @property
     def _device(self):

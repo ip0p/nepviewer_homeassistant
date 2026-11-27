@@ -64,3 +64,13 @@ timezone, which should match the site's timezone.
 Run all regression tests with `python -m pytest -q` after installing `pytest`
 and `aiohttp`. Platform smoke tests use lightweight Home Assistant interfaces;
 a live Home Assistant installation is still needed for end-to-end validation.
+
+Each inverter device includes its model and serial number. Firmware is read from
+`v2/device/detail` (`version`), with the site response's `otaInfo.nowVersion`
+as a fallback. Available model, serial number and firmware values also appear
+on the inverter status sensor. Optional device-detail failures do not suppress
+site or inverter production readings. Unknown firmware is left unset; target
+OTA firmware is never reported as installed firmware. Device details are cached
+for the integration session, as before; reload the integration after a firmware
+upgrade to fetch fresh details. Metadata that arrives after initial discovery
+is synchronized to the existing inverter device without changing its identity.
